@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "315336904959",
+    "project_id": "elyon-ai-2a914",
+    "storage_bucket": "elyon-ai-2a914.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315336904959:android:c944725b36660efd4f3cca",
+        "android_client_info": {
+          "package_name": "com.elyon.ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTEgPm0B1qr0hpvWmj_eo5T1i8C7IWCCw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

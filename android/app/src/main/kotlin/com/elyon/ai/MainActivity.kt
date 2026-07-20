@@ -1,4 +1,4 @@
-package com.example.elyon
+package com.elyon.ai
 
 import io.flutter.embedding.android.FlutterActivity
 
