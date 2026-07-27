@@ -4,9 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/utils/greeting.dart';
 import '../../../shared/widgets/credits_card.dart';
 import '../../../shared/widgets/dashboard_card.dart';
-import '../../generator/presentation/generator_screen.dart';
-import '../../ai/presentation/generate_screen.dart';
 import '../../projects/presentation/projects_screen.dart';
+
+import '../../ai_director/presentation/ai_director_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -91,13 +91,13 @@ class HomeScreen extends StatelessWidget {
 
             DashboardCard(
               icon: Icons.auto_awesome,
-              title: "Generate Animation",
-              subtitle: "Create AI-powered videos",
+              title: "AI Studio",
+              subtitle: "Open the AI Creative Studio",
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const GenerateScreen(),
+                    builder: (_) => const AIDirectorScreen(),
                   ),
                 );
               },

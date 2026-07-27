@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../../shared/widgets/logo.dart';
+import '../../../shared/widgets/app_logo.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_text_field.dart';
+import '../services/auth_service.dart';
+
+import '../../../shared/navigation/main_navigation_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,12 +16,15 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
   bool obscurePassword = true;
+  bool isLoading = false;
+
+  final AuthService authService = AuthService();
+  
 
   @override
   void dispose() {
@@ -27,19 +34,102 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  Future<void> register() async {
+    if (nameController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please fill in all fields."),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final credential = await authService.register(
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+     
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Account created successfully."),
+        ),
+      );
+
+            
+       Navigator.pushReplacement(
+         context,
+         MaterialPageRoute(
+           builder: (_) => const MainNavigationScreen(),
+         ),
+       );
+
+    } 
+      on FirebaseAuthException catch (e) {
+      String message = "Registration failed.";
+
+      switch (e.code) {
+        case "email-already-in-use":
+          message = "An account already exists with this email.";
+          break;
+
+        case "invalid-email":
+          message = "Please enter a valid email.";
+          break;
+
+        case "weak-password":
+          message = "Password must be at least 6 characters.";
+          break;
+
+        default:
+          message = e.message ?? message;
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+        ),
+      );
+
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-
             children: [
-
               const SizedBox(height: 40),
 
               const Center(
@@ -69,7 +159,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
 
               const SizedBox(height: 40),
-
               AuthTextField(
                 hint: "Full Name",
                 icon: Icons.person_outline,
@@ -98,7 +187,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               AuthButton(
                 text: "Create Account",
-                onPressed: () {},
+                isLoading: isLoading,
+                onPressed: register,
               ),
 
               const SizedBox(height: 30),
@@ -106,14 +196,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   const Text("Already have an account?"),
 
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                     child: const Text("Login"),
                   ),
-
                 ],
               ),
             ],

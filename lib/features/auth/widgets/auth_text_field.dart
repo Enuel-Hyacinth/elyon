@@ -30,47 +30,44 @@ class _AuthTextFieldState extends State<AuthTextField> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: widget.controller,
-      keyboardType: widget.keyboardType,
-      obscureText: _obscure,
-      decoration: InputDecoration(
-        hintText: widget.hint,
-        prefixIcon: Icon(widget.icon),
-
-        suffixIcon: widget.obscureText
-            ? IconButton(
-                icon: Icon(
-                  _obscure
-                      ? Icons.visibility
-                      : Icons.visibility_off,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscure = !_obscure;
-                  });
-                },
-              )
-            : null,
-
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
+Widget build(BuildContext context) {
+  return TextField(
+    controller: widget.controller,
+    keyboardType: widget.keyboardType,
+    obscureText: _obscure,
+    autocorrect: !widget.obscureText,
+    enableSuggestions: !widget.obscureText,
+    decoration: InputDecoration(
+      hintText: widget.hint,
+      prefixIcon: Icon(widget.icon),
+      suffixIcon: widget.obscureText
+          ? IconButton(
+              icon: Icon(
+                _obscure
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscure = !_obscure;
+                });
+              },
+            )
+          : null,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 18,
+      ),
+    ),
+  );
+}
 }

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'register_screen.dart';
+
 import '../../../shared/widgets/app_logo.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_text_field.dart';
-import '../../home/presentation/home_screen.dart';
+import '../services/auth_service.dart';
+
+import '../../../shared/navigation/main_navigation_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool obscurePassword = true;
   bool isLoading = false;
+
+  final AuthService authService = AuthService();
 
   Future<void> signIn() async {
     if (emailController.text.trim().isEmpty ||
@@ -36,21 +43,21 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await authService.login(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
       if (!mounted) return;
 
-      return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Login successful."),
+        ),
+      );
 
-      // TODO:
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (_) => const HomeScreen()),
-      // );
-
+                
+      
     } on FirebaseAuthException catch (e) {
       String message;
 
@@ -88,6 +95,16 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+
     } finally {
       if (mounted) {
         setState(() {
@@ -113,7 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-
               const SizedBox(height: 40),
 
               const Center(
@@ -143,7 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 40),
-
               AuthTextField(
                 hint: "Email",
                 icon: Icons.email_outlined,
@@ -165,7 +180,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO:
+                    // Navigate to ForgotPasswordScreen
+                  },
                   child: const Text("Forgot Password?"),
                 ),
               ),
@@ -173,23 +191,29 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               AuthButton(
-                text: isLoading ? "Signing In..." : "Login",
+                text: "Login",
+                isLoading: isLoading,
                 onPressed: signIn,
-               ),
+              ),
 
               const SizedBox(height: 30),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   const Text("Don't have an account?"),
 
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterScreen(),
+                        ),
+                      );
+                    },
                     child: const Text("Sign Up"),
                   ),
-
                 ],
               ),
             ],
