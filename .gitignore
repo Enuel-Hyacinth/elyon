@@ -44,5 +44,28 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# ==========================
 # Environment Variables
+# ==========================
 .env
+.env.*
+!.env.example
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/settings.json
+
+# ==========================
+# Deno
+# ==========================
+deno.lock
+
+# ==========================
+# Secrets
+# ==========================
+*.pem
+*.key
+*.p12
+*.crt
+firebase-adminsdk*.json
