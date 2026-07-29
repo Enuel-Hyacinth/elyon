@@ -51,11 +51,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final credential = await authService.register(
-        name: nameController.text.trim(),
+      final credential = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+      await credential.user?.updateDisplayName(
+         nameController.text.trim(),
+      );
+      await credential.user?.reload();
 
      
       if (!mounted) return;

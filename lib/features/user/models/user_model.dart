@@ -188,12 +188,20 @@ class UserModel {
           map["onboardingCompleted"] ?? false,
 
       createdAt:
-          (map["createdAt"] as Timestamp)
-              .toDate(),
+
+       map["createdAt"] is Timestamp
+
+         ? (map["createdAt"] as Timestamp).toDate()
+
+         : DateTime.now(),
 
       lastLogin:
-          (map["lastLogin"] as Timestamp)
-              .toDate(),
+
+      map["lastLogin"] is Timestamp
+
+         ? (map["lastLogin"] as Timestamp).toDate()
+
+         : DateTime.now(),
 
     );
 

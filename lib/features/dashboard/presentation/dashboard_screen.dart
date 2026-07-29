@@ -12,7 +12,6 @@ import '../widgets/quick_actions.dart';
 import '../widgets/continue_project_card.dart';
 import '../widgets/recent_projects.dart';
 
-import '../../projects/models/project_model.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -212,6 +211,6 @@ class _DashboardScreenState
             ),
           );
         },
-      ),    
+      );    
   }
 }

@@ -1,5 +1,7 @@
 import 'ai_service.dart';
-import 'gemini_service.dart';
+import 'runway_service.dart';
+
+
 
 ///--------------------------------------------------
 /// AI PROVIDER
@@ -20,8 +22,10 @@ import 'gemini_service.dart';
 ///--------------------------------------------------
 
 class AIProvider {
+
   AIProvider._();
 
   static final AIService instance =
-      GeminiService();
+      RunwayService();
+
 }

@@ -25,23 +25,13 @@ class UserService {
               .collection("users")
               .withConverter<UserModel>(
 
-                fromFirestore:
-                    (snapshot, _) {
+                fromFirestore: (snapshot, _) =>
+                    UserModel.fromMap(
+                      snapshot.data()!,
+                    ),
 
-                  return UserModel.fromMap(
-
-                    snapshot.data()!,
-
-                  );
-
-                },
-
-                toFirestore:
-                    (user, _) {
-
-                  return user.toMap();
-
-                },
+                toFirestore: (user, _) =>
+                    user.toMap(),
 
               );
 
@@ -50,43 +40,7 @@ class UserService {
   //--------------------------------------------------
 
   User? get currentUser =>
-
       _auth.currentUser;
-
-//--------------------------------------------------
-// GET CURRENT USER PROFILE
-//--------------------------------------------------
-
-Future<UserModel?> getCurrentUserProfile() async {
-
-  final user =
-      FirebaseAuth.instance.currentUser;
-
-  if (user == null) {
-
-    return null;
-
-  }
-
-  final snapshot =
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(user.uid)
-          .get();
-
-  if (!snapshot.exists) {
-
-    return null;
-
-  }
-
-  return UserModel.fromMap(
-
-    snapshot.data()!,
-
-  );
-
-}
 
   //--------------------------------------------------
   // CURRENT USER ID
@@ -99,9 +53,7 @@ Future<UserModel?> getCurrentUserProfile() async {
     if (user == null) {
 
       throw Exception(
-
         "No authenticated user.",
-
       );
 
     }
@@ -115,9 +67,34 @@ Future<UserModel?> getCurrentUserProfile() async {
   //--------------------------------------------------
 
   FieldValue get serverTimestamp =>
-
       FieldValue.serverTimestamp();
 
+  //--------------------------------------------------
+  // GET CURRENT USER PROFILE
+  //--------------------------------------------------
+
+  Future<UserModel?> getCurrentUserProfile() async {
+
+    final user = currentUser;
+
+    if (user == null) {
+
+      return null;
+
+    }
+
+    final snapshot =
+        await _users.doc(user.uid).get();
+
+    if (!snapshot.exists) {
+
+      return null;
+
+    }
+
+    return snapshot.data();
+
+  }
 
   //--------------------------------------------------
   // CREATE USER PROFILE
@@ -126,7 +103,6 @@ Future<UserModel?> getCurrentUserProfile() async {
   Future<UserModel> createUserProfile({
 
     required String displayName,
-
     required String email,
 
   }) async {
@@ -136,18 +112,13 @@ Future<UserModel?> getCurrentUserProfile() async {
     if (user == null) {
 
       throw Exception(
-
         "No authenticated user.",
-
       );
 
     }
 
-    final document = _users.doc(
-
-      user.uid,
-
-    );
+    final document =
+        _users.doc(user.uid);
 
     final profile = UserModel(
 
@@ -191,24 +162,22 @@ Future<UserModel?> getCurrentUserProfile() async {
 
     try {
 
-      await document.set({
+      await document.set(profile);
 
-        ...profile.toMap(),
+      await document.update({
 
         "createdAt": serverTimestamp,
 
         "lastLogin": serverTimestamp,
 
-      });
+     });
 
       return profile;
 
     } on FirebaseException catch (e) {
 
       throw Exception(
-
         "Unable to create profile: ${e.message}",
-
       );
 
     }
@@ -221,26 +190,27 @@ Future<UserModel?> getCurrentUserProfile() async {
 
   Future<bool> profileExists() async {
 
-    final snapshot = await _users
-
-        .doc(currentUserId)
-
-        .get();
+    final snapshot =
+        await _users
+            .doc(currentUserId)
+            .get();
 
     return snapshot.exists;
 
   }
+
   //--------------------------------------------------
-  // GET USER PROFILE
+  // GET PROFILE
   //--------------------------------------------------
 
   Future<UserModel?> getProfile() async {
 
     try {
 
-      final snapshot = await _users
-          .doc(currentUserId)
-          .get();
+      final snapshot =
+          await _users
+              .doc(currentUserId)
+              .get();
 
       if (!snapshot.exists) {
 
@@ -261,7 +231,7 @@ Future<UserModel?> getCurrentUserProfile() async {
   }
 
   //--------------------------------------------------
-  // STREAM USER PROFILE
+  // STREAM PROFILE
   //--------------------------------------------------
 
   Stream<UserModel?> streamProfile() {
@@ -282,6 +252,8 @@ Future<UserModel?> getCurrentUserProfile() async {
     });
 
   }
+
+  
   //--------------------------------------------------
   // UPDATE PROFILE
   //--------------------------------------------------
@@ -306,26 +278,19 @@ Future<UserModel?> getCurrentUserProfile() async {
 
     final updated = user.copyWith(
 
-      displayName:
-          displayName,
+      displayName: displayName,
 
-      photoUrl:
-          photoUrl,
+      photoUrl: photoUrl,
 
-      theme:
-          theme,
+      theme: theme,
 
-      language:
-          language,
+      language: language,
 
-      notificationsEnabled:
-          notificationsEnabled,
+      notificationsEnabled: notificationsEnabled,
 
-      onboardingCompleted:
-          onboardingCompleted,
+      onboardingCompleted: onboardingCompleted,
 
-      lastLogin:
-          DateTime.now(),
+      lastLogin: DateTime.now(),
 
     );
 
@@ -337,14 +302,9 @@ Future<UserModel?> getCurrentUserProfile() async {
 
         ...updated.toMap(),
 
-        "lastLogin":
-            serverTimestamp,
+        "lastLogin": serverTimestamp,
 
       });
-
-      //------------------------------------------------
-      // Update Firebase Auth display name
-      //------------------------------------------------
 
       if (displayName != null &&
           displayName.isNotEmpty) {
@@ -354,10 +314,6 @@ Future<UserModel?> getCurrentUserProfile() async {
         );
 
       }
-
-      //------------------------------------------------
-      // Update Firebase Auth photo URL
-      //------------------------------------------------
 
       if (photoUrl != null &&
           photoUrl.isNotEmpty) {
@@ -385,6 +341,58 @@ Future<UserModel?> getCurrentUserProfile() async {
   }
 
   //--------------------------------------------------
+  // UPDATE PHOTO URL
+  //--------------------------------------------------
+
+  Future<void> updatePhotoUrl(
+
+    String photoUrl,
+
+  ) async {
+
+    await _users
+        .doc(currentUserId)
+        .update({
+
+      "photoUrl": photoUrl,
+
+    });
+
+    await currentUser?.updatePhotoURL(
+      photoUrl,
+    );
+
+    await currentUser?.reload();
+
+  }
+
+  //--------------------------------------------------
+  // UPDATE DISPLAY NAME
+  //--------------------------------------------------
+
+  Future<void> updateDisplayName(
+
+    String displayName,
+
+  ) async {
+
+    await _users
+        .doc(currentUserId)
+        .update({
+
+      "displayName": displayName,
+
+    });
+
+    await currentUser?.updateDisplayName(
+      displayName,
+    );
+
+    await currentUser?.reload();
+
+  }
+
+    //--------------------------------------------------
   // UPDATE LAST LOGIN
   //--------------------------------------------------
 
@@ -396,8 +404,7 @@ Future<UserModel?> getCurrentUserProfile() async {
           .doc(currentUserId)
           .update({
 
-        "lastLogin":
-            serverTimestamp,
+        "lastLogin": serverTimestamp,
 
       });
 
@@ -412,6 +419,7 @@ Future<UserModel?> getCurrentUserProfile() async {
     }
 
   }
+
   //--------------------------------------------------
   // ADD CREDITS
   //--------------------------------------------------
@@ -450,9 +458,6 @@ Future<UserModel?> getCurrentUserProfile() async {
 
         final user = snapshot.data()!;
 
-        final updatedCredits =
-            user.credits + amount;
-
         transaction.update(
 
           reference,
@@ -460,7 +465,7 @@ Future<UserModel?> getCurrentUserProfile() async {
           {
 
             "credits":
-                updatedCredits,
+                user.credits + amount,
 
             "lastLogin":
                 serverTimestamp,
@@ -579,7 +584,8 @@ Future<UserModel?> getCurrentUserProfile() async {
     return user?.credits ?? 0;
 
   }
-  //--------------------------------------------------
+
+   //--------------------------------------------------
   // UPDATE SUBSCRIPTION
   //--------------------------------------------------
 
@@ -591,7 +597,9 @@ Future<UserModel?> getCurrentUserProfile() async {
 
     try {
 
-      await _users.doc(currentUserId).update({
+      await _users
+          .doc(currentUserId)
+          .update({
 
         "subscription": subscription,
 
@@ -629,7 +637,9 @@ Future<UserModel?> getCurrentUserProfile() async {
 
     try {
 
-      await _users.doc(currentUserId).update({
+      await _users
+          .doc(currentUserId)
+          .update({
 
         "totalProjects":
             FieldValue.increment(projects),
@@ -706,11 +716,11 @@ Future<UserModel?> getCurrentUserProfile() async {
 
   ) async {
 
-    return await _firestore.runTransaction<T>(
+    return _firestore.runTransaction<T>(
 
       (transaction) async {
 
-        return await action(transaction);
+        return action(transaction);
 
       },
 
@@ -727,11 +737,8 @@ Future<UserModel?> getCurrentUserProfile() async {
     try {
 
       await _firestore
-
           .collection("_health")
-
           .limit(1)
-
           .get();
 
       return true;
@@ -743,4 +750,5 @@ Future<UserModel?> getCurrentUserProfile() async {
     }
 
   }
+
 }

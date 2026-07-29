@@ -17,7 +17,7 @@ class ProjectsScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection("projects")
-            .where("uid", isEqualTo: uid)
+            .where("userId", isEqualTo: uid)
             .orderBy("createdAt", descending: true)
             .snapshots(),
         builder: (context, snapshot) {

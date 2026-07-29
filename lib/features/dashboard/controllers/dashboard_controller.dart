@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../projects/models/project_model.dart';
-
-import '../../studio/services/project_service.dart';
+import '../../projects/services/project_service.dart';
 import '../../user/services/user_service.dart';
 
 class DashboardController extends ChangeNotifier {
-
   //--------------------------------------------------
   // SERVICES
   //--------------------------------------------------
@@ -16,8 +14,27 @@ class DashboardController extends ChangeNotifier {
   final ProjectService _projectService =
       ProjectService();
 
-    final UserService _userService =
+  final UserService _userService =
       UserService();
+
+  //--------------------------------------------------
+  // PROJECT STATUS
+  //--------------------------------------------------
+
+  static const String statusCreated =
+      "created";
+
+  static const String statusQueued =
+      "queued";
+
+  static const String statusRendering =
+      "rendering";
+
+  static const String statusCompleted =
+      "completed";
+
+  static const String statusFailed =
+      "failed";
 
   //--------------------------------------------------
   // STATE
@@ -29,212 +46,28 @@ class DashboardController extends ChangeNotifier {
 
   List<ProjectModel> _projects = [];
 
-  List<ProjectModel> get projects => _projects;
+  List<ProjectModel> get projects =>
+      _projects;
 
   StreamSubscription<List<ProjectModel>>?
       _subscription;
 
-//--------------------------------------------------
-// USER STATE
-//--------------------------------------------------
-
-String _userName = "Creator";
-
-String get userName => _userName;
-
-int _credits = 0;
-
-int get credits => _credits;
-
-String _plan = "Free";
-
-String get plan => _plan;
-
   //--------------------------------------------------
-  // QUICK GETTERS
+  // USER
   //--------------------------------------------------
 
-  ProjectModel? get latestProject {
+  String _userName = "Creator";
 
-    if (_projects.isEmpty) {
-      return null;
-    }
+  String get userName => _userName;
 
-    return _projects.first;
+  int _credits = 0;
 
-  }
+  int get credits => _credits;
 
-  bool get hasProjects =>
-      _projects.isNotEmpty;
+  String _plan = "Free";
 
-  int get totalProjects =>
-      _projects.length;
+  String get plan => _plan;
 
-  int get completedProjects =>
-      _projects
-          .where(
-            (p) =>
-                p.status ==
-                ProjectService.statusCompleted,
-          )
-          .length;
-
-  int get renderingProjects =>
-      _projects
-          .where(
-            (p) =>
-                p.status ==
-                ProjectService.statusRendering,
-          )
-          .length;
-
-  int get draftProjects =>
-      _projects
-          .where(
-            (p) =>
-                p.status ==
-                ProjectService.statusCreated,
-          )
-          .length;
-  //--------------------------------------------------
-  // INITIALIZE
-  //--------------------------------------------------
-
-  Future<void> initialize() async {
-
-    _loading = true;
-
-    notifyListeners();
-
-    await refresh();
-
-    _listenToProjects();
-
-    _loading = false;
-
-    notifyListeners();
-
-  }
-
-  //--------------------------------------------------
-  // REFRESH
-  //--------------------------------------------------
-
-  Future<void> refresh() async {
-
-  try {
-
-    //--------------------------------------------------
-    // LOAD PROJECTS
-    //--------------------------------------------------
-
-    _projects =
-        await _projectService.loadProjects();
-
-    //--------------------------------------------------
-    // LOAD USER PROFILE
-    //--------------------------------------------------
-
-    final profile =
-        await _userService.getCurrentUserProfile();
-
-    if (profile != null) {
-
-      _userName =
-          profile.displayName;
-
-      _credits =
-          profile.credits;
-
-      _plan =
-          profile.subscription;
-
-    }
-
-  } catch (e) {
-
-    debugPrint(
-      "Dashboard Refresh Error: $e",
-    );
-
-    _projects = [];
-
-  }
-
-  notifyListeners();
-
-}
-
-  //--------------------------------------------------
-  // REAL-TIME PROJECT LISTENER
-  //--------------------------------------------------
-
-  void _listenToProjects() {
-
-    _subscription?.cancel();
-
-    _subscription =
-        _projectService
-            .streamProjects()
-            .listen(
-
-      (projects) {
-
-        _projects = projects;
-
-        notifyListeners();
-
-      },
-
-      onError: (_) {},
-
-    );
-
-  }
-
-  //--------------------------------------------------
-  // FIND PROJECT
-  //--------------------------------------------------
-
-  ProjectModel? findProject(
-
-    String projectId,
-
-  ) {
-
-    try {
-
-      return _projects.firstWhere(
-
-        (project) =>
-
-            project.id == projectId,
-
-      );
-
-    } catch (_) {
-
-      return null;
-
-    }
-
-  }
-
-  //--------------------------------------------------
-  // RECENT PROJECTS
-  //--------------------------------------------------
-
-  List<ProjectModel> get recentProjects {
-
-    if (_projects.length <= 5) {
-
-      return _projects;
-
-    }
-
-    return _projects.take(5).toList();
-
-  }
   //--------------------------------------------------
   // ACTIVE PROJECT
   //--------------------------------------------------
@@ -245,29 +78,160 @@ String get plan => _plan;
       _selectedProject;
 
   //--------------------------------------------------
-  // SELECT PROJECT
+  // QUICK GETTERS
   //--------------------------------------------------
 
-  void selectProject(
-    ProjectModel project,
-  ) {
+  bool get hasProjects =>
+      _projects.isNotEmpty;
 
-    _selectedProject = project;
+  int get totalProjects =>
+      _projects.length;
 
+  ProjectModel? get latestProject {
+    if (_projects.isEmpty) {
+      return null;
+    }
+
+    return _projects.first;
+  }
+
+  int get completedProjects =>
+      _projects
+          .where(
+            (p) =>
+                p.status ==
+                statusCompleted,
+          )
+          .length;
+
+  int get renderingProjects =>
+      _projects
+          .where(
+            (p) =>
+                p.status ==
+                statusRendering,
+          )
+          .length;
+
+  int get draftProjects =>
+      _projects
+          .where(
+            (p) =>
+                p.status ==
+                statusCreated,
+          )
+          .length;
+  //--------------------------------------------------
+  // INITIALIZE
+  //--------------------------------------------------
+
+  Future<void> initialize() async {
+    _loading = true;
     notifyListeners();
 
+    await refresh();
+
+    _listenToProjects();
+
+    _loading = false;
+    notifyListeners();
   }
 
   //--------------------------------------------------
-  // CLEAR SELECTION
+  // REFRESH
   //--------------------------------------------------
 
-  void clearSelection() {
+  Future<void> refresh() async {
+    try {
+      //--------------------------------------------------
+      // LOAD PROJECTS
+      //--------------------------------------------------
 
-    _selectedProject = null;
+      _projects =
+          await _projectService.getProjects();
+
+      //--------------------------------------------------
+      // LOAD USER
+      //--------------------------------------------------
+
+      final profile =
+          await _userService.getCurrentUserProfile();
+
+      if (profile != null) {
+        _userName =
+            profile.displayName;
+
+        _credits =
+            profile.credits;
+
+        _plan =
+            profile.subscription;
+      }
+    } catch (e) {
+      debugPrint(
+        "[Dashboard] Refresh failed: $e",
+      );
+
+      _projects = [];
+    }
 
     notifyListeners();
+  }
 
+  //--------------------------------------------------
+  // PROJECT STREAM
+  //--------------------------------------------------
+
+  void _listenToProjects() {
+    _subscription?.cancel();
+
+    _subscription =
+        _projectService
+            .streamProjects()
+            .listen(
+      (projects) {
+        _projects = projects;
+
+        notifyListeners();
+      },
+      onError: (error) {
+        debugPrint(
+          "[Dashboard] Stream error: $error",
+        );
+      },
+    );
+  }
+
+  //--------------------------------------------------
+  // FIND PROJECT
+  //--------------------------------------------------
+
+  ProjectModel? findProject(
+    String projectId,
+  ) {
+    try {
+      return _projects.firstWhere(
+        (project) =>
+            project.id ==
+            projectId,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  //--------------------------------------------------
+  // RECENT PROJECTS
+  //--------------------------------------------------
+
+  List<ProjectModel> get recentProjects {
+    if (_projects.length <= 5) {
+      return _projects;
+    }
+
+    return _projects
+        .take(5)
+        .toList();
   }
 
   //--------------------------------------------------
@@ -275,49 +239,52 @@ String get plan => _plan;
   //--------------------------------------------------
 
   ProjectModel? get continueProject {
-
     if (_selectedProject != null) {
-
       return _selectedProject;
-
     }
 
     if (_projects.isEmpty) {
-
       return null;
-
     }
 
     return _projects.first;
+  }
 
+  bool get hasContinueProject =>
+      continueProject != null;
+  //--------------------------------------------------
+  // SELECT PROJECT
+  //--------------------------------------------------
+
+  void selectProject(
+    ProjectModel project,
+  ) {
+    _selectedProject = project;
+
+    notifyListeners();
   }
 
   //--------------------------------------------------
-  // HAS CONTINUE PROJECT
+  // CLEAR SELECTION
   //--------------------------------------------------
 
-  bool get hasContinueProject =>
+  void clearSelection() {
+    _selectedProject = null;
 
-      continueProject != null;
+    notifyListeners();
+  }
 
   //--------------------------------------------------
-  // DASHBOARD SUMMARY
+  // DASHBOARD STATISTICS
   //--------------------------------------------------
 
   Map<String, int> get statistics {
-
     return {
-
       "total": totalProjects,
-
       "completed": completedProjects,
-
       "rendering": renderingProjects,
-
       "draft": draftProjects,
-
     };
-
   }
 
   //--------------------------------------------------
@@ -325,75 +292,89 @@ String get plan => _plan;
   //--------------------------------------------------
 
   bool get hasRenderingProject =>
-
       renderingProjects > 0;
 
   //--------------------------------------------------
-  // COMPLETION %
+  // COMPLETION RATE
   //--------------------------------------------------
 
   double get completionRate {
-
     if (_projects.isEmpty) {
-
       return 0;
-
     }
 
     return completedProjects /
         _projects.length;
-
   }
 
   //--------------------------------------------------
-  // RECENT COMPLETED
+  // COMPLETED PROJECTS
   //--------------------------------------------------
 
   List<ProjectModel> get completedList {
-
-    return _projects.where(
-
-      (project) =>
-
-          project.status ==
-          ProjectService.statusCompleted,
-
-    ).toList();
-
+    return _projects
+        .where(
+          (project) =>
+              project.status ==
+              statusCompleted,
+        )
+        .toList();
   }
 
   //--------------------------------------------------
-  // RECENT RENDERING
+  // RENDERING PROJECTS
   //--------------------------------------------------
 
   List<ProjectModel> get renderingList {
-
-    return _projects.where(
-
-      (project) =>
-
-          project.status ==
-          ProjectService.statusRendering,
-
-    ).toList();
-
+    return _projects
+        .where(
+          (project) =>
+              project.status ==
+              statusRendering,
+        )
+        .toList();
   }
 
   //--------------------------------------------------
-  // RECENT DRAFTS
+  // DRAFT PROJECTS
   //--------------------------------------------------
 
   List<ProjectModel> get draftList {
+    return _projects
+        .where(
+          (project) =>
+              project.status ==
+              statusCreated,
+        )
+        .toList();
+  }
 
-    return _projects.where(
+  //--------------------------------------------------
+  // FAILED PROJECTS
+  //--------------------------------------------------
 
-      (project) =>
+  List<ProjectModel> get failedList {
+    return _projects
+        .where(
+          (project) =>
+              project.status ==
+              statusFailed,
+        )
+        .toList();
+  }
 
-          project.status ==
-          ProjectService.statusCreated,
+  //--------------------------------------------------
+  // QUEUED PROJECTS
+  //--------------------------------------------------
 
-    ).toList();
-
+  List<ProjectModel> get queuedList {
+    return _projects
+        .where(
+          (project) =>
+              project.status ==
+              statusQueued,
+        )
+        .toList();
   }
   //--------------------------------------------------
   // REMOVE PROJECT
@@ -402,21 +383,15 @@ String get plan => _plan;
   Future<void> removeProject(
     String projectId,
   ) async {
-
     try {
-
       await _projectService.deleteProject(
         projectId,
       );
-
     } catch (e) {
-
       debugPrint(
-        "Delete Project Error: $e",
+        "[Dashboard] Delete failed: $e",
       );
-
     }
-
   }
 
   //--------------------------------------------------
@@ -426,29 +401,17 @@ String get plan => _plan;
   Future<void> archiveProject(
     String projectId,
   ) async {
-
-    try {
-
-      await _projectService.archiveProject(
-        projectId,
-      );
-
-    } catch (e) {
-
-      debugPrint(
-        "Archive Project Error: $e",
-      );
-
-    }
-
+    debugPrint(
+      "[Dashboard] Archive requested for $projectId "
+      "(not implemented).",
+    );
   }
 
   //--------------------------------------------------
-  // RESET DASHBOARD
+  // RESET
   //--------------------------------------------------
 
   void reset() {
-
     _projects = [];
 
     _selectedProject = null;
@@ -456,7 +419,6 @@ String get plan => _plan;
     _loading = false;
 
     notifyListeners();
-
   }
 
   //--------------------------------------------------
@@ -465,11 +427,8 @@ String get plan => _plan;
 
   @override
   void dispose() {
-
     _subscription?.cancel();
 
     super.dispose();
-
   }
-
 }

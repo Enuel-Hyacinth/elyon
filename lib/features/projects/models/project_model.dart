@@ -126,7 +126,7 @@ class ProjectModel {
 
       language: map['language'] ?? 'English',
 
-      voice: map['voice'] ?? 'English',
+      voice: map['voice'] ?? 'Female',
 
       aspectRatio: map['aspectRatio'] ?? '16:9',
 

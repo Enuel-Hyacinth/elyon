@@ -57,16 +57,9 @@ class GenerateButton extends StatelessWidget {
             onPressed: (!hasCredits || generating)
                 ? null
                 : () {
-                    controller.startGeneration();
+                    controller.startGeneration(context);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "AI generation started...",
-                        ),
-                      ),
-                    );
-                  },
+                    },
             icon: generating
                 ? const SizedBox(
                     height: 20,
@@ -129,14 +122,9 @@ class GenerateButton extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: hasCredits
                   ? () {
-                      controller.startGeneration();
+                      controller.startGeneration(context);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Retrying generation..."),
-                        ),
-                      );
-                    }
+                      }
                   : null,
               icon: const Icon(Icons.refresh),
               label: const Text("Retry"),
@@ -176,7 +164,7 @@ class GenerateButton extends StatelessWidget {
             leading: const Icon(Icons.stars),
             title: const Text("Credits"),
             subtitle: Text(
-              "${controller.creditsRemaining} available • ${controller.creditsRequired} required",
+              "${controller.creditsRemaining} available • ${StudioController.creditsRequired} required",
             ),
             trailing: hasCredits
                 ? const Icon(

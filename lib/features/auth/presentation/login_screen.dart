@@ -8,7 +8,6 @@ import '../widgets/auth_button.dart';
 import '../widgets/auth_text_field.dart';
 import '../services/auth_service.dart';
 
-import '../../../shared/navigation/main_navigation_screen.dart';
 
 
 class LoginScreen extends StatefulWidget {

@@ -3,16 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../projects/models/project_model.dart';
 
-import '../services/studio_service.dart';
 import '../services/studio_autosave_service.dart';
+import '../services/studio_service.dart';
 
 import '../../../core/ai/ai_provider.dart';
 import '../../../core/ai/ai_service.dart';
 import '../../../core/ai/workflow_service.dart';
 
 class StudioController extends ChangeNotifier {
+
   StudioController() {
-    promptController.addListener(_onPromptChanged);
+    promptController.addListener(
+      _onPromptChanged,
+    );
   }
 
   //--------------------------------------------------
@@ -28,8 +31,9 @@ class StudioController extends ChangeNotifier {
   final StudioService _studioService =
       StudioService();
 
-  final StudioAutoSaveService _autoSaveService =
-      StudioAutoSaveService();
+  final StudioAutoSaveService
+      _autoSaveService =
+          StudioAutoSaveService();
 
   final FirebaseAuth _auth =
       FirebaseAuth.instance;
@@ -48,11 +52,25 @@ class StudioController extends ChangeNotifier {
   // PROJECT
   //--------------------------------------------------
 
-  ProjectModel? _project;
+  ProjectModel? _currentProject;
 
-  ProjectModel? get project =>
-      _project;
+  ProjectModel? get currentProject =>
+    _currentProject;
 
+//--------------------------------------------------
+// BACKWARD COMPATIBILITY
+//--------------------------------------------------
+
+ProjectModel? get project =>
+    _currentProject;
+
+set project(ProjectModel? value) {
+
+  _currentProject = value;
+
+  notifyListeners();
+
+}
   //--------------------------------------------------
   // PROMPT
   //--------------------------------------------------
@@ -74,18 +92,24 @@ class StudioController extends ChangeNotifier {
   String? previewImage;
 
   //--------------------------------------------------
-  // GENERATION STATE
+  // GENERATION
   //--------------------------------------------------
 
-  bool _generating = false;
+  bool _isGenerating = false;
 
-  bool get generating =>
-      _generating;
+  bool get isGenerating =>
+    _isGenerating;
+
+//--------------------------------------------------
+// BACKWARD COMPATIBILITY
+//--------------------------------------------------
+
+ bool get generating =>
+    _isGenerating;
 
   bool _busy = false;
 
-  bool get busy =>
-      _busy;
+  bool get busy => _busy;
 
   double _progress = 0;
 
@@ -117,7 +141,7 @@ class StudioController extends ChangeNotifier {
       creditsRequired;
 
   //--------------------------------------------------
-  // STUDIO SETTINGS
+  // SETTINGS
   //--------------------------------------------------
 
   String _style = "Cinematic";
@@ -154,14 +178,17 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   bool get hasProject =>
-      _project != null;
+      _currentProject != null;
 
-  bool get canGenerate =>
-      !_generating &&
-      promptController.text
-          .trim()
-          .isNotEmpty &&
-      hasCredits;
+  bool get canGenerate {
+
+    return !_isGenerating &&
+        promptController.text
+            .trim()
+            .isNotEmpty &&
+        hasCredits;
+
+  }
 
   int get promptLength =>
       promptController.text.length;
@@ -169,8 +196,11 @@ class StudioController extends ChangeNotifier {
   // LOAD PROJECT
   //--------------------------------------------------
 
-  void loadProject(ProjectModel project) {
-    _project = project;
+  void loadProject(
+    ProjectModel project,
+  ) {
+
+    _currentProject = project;
 
     promptController.text =
         project.enhancedPrompt;
@@ -190,6 +220,7 @@ class StudioController extends ChangeNotifier {
     _hasUnsavedChanges = false;
 
     notifyListeners();
+
   }
 
   //--------------------------------------------------
@@ -197,17 +228,23 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   void _onPromptChanged() {
+
     _hasUnsavedChanges = true;
+
     autoSaved = false;
 
     notifyListeners();
+
   }
 
   //--------------------------------------------------
   // UPDATE PROMPT
   //--------------------------------------------------
 
-  void updatePrompt(String value) {
+  void updatePrompt(
+    String value,
+  ) {
+
     if (promptController.text == value) {
       return;
     }
@@ -216,14 +253,17 @@ class StudioController extends ChangeNotifier {
 
     promptController.selection =
         TextSelection.fromPosition(
+
       TextPosition(
         offset: value.length,
       ),
+
     );
 
     history.add(value);
 
     markDirty();
+
   }
 
   //--------------------------------------------------
@@ -231,36 +271,51 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   Future<void> enhancePrompt() async {
+
     final prompt =
         promptController.text.trim();
 
-    if (prompt.isEmpty) return;
+    if (prompt.isEmpty) {
+      return;
+    }
 
     _setBusy(true);
 
     try {
-      final enhanced =
-          await _ai.enhancePrompt(prompt);
 
-      promptController.text = enhanced;
+      final enhanced =
+          await _ai.enhancePrompt(
+        prompt,
+      );
+
+      promptController.text =
+          enhanced;
 
       promptController.selection =
           TextSelection.fromPosition(
+
         TextPosition(
           offset: enhanced.length,
         ),
+
       );
 
       history.add(enhanced);
 
       markDirty();
+
     } catch (e) {
+
       debugPrint(
         "Prompt enhancement failed: $e",
       );
+
     } finally {
+
       _setBusy(false);
+
     }
+
   }
 
   //--------------------------------------------------
@@ -268,45 +323,63 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   void setStyle(String value) {
+
     if (_style == value) return;
 
     _style = value;
+
     markDirty();
+
   }
 
   void setLanguage(String value) {
+
     if (_language == value) return;
 
     _language = value;
+
     markDirty();
+
   }
 
   void setVoice(String value) {
+
     if (_voice == value) return;
 
     _voice = value;
+
     markDirty();
+
   }
 
   void setResolution(String value) {
+
     if (_resolution == value) return;
 
     _resolution = value;
+
     markDirty();
+
   }
 
   void setAspectRatio(String value) {
+
     if (_aspectRatio == value) return;
 
     _aspectRatio = value;
+
     markDirty();
+
   }
 
   void setDuration(String value) {
+
     if (_duration == value) return;
 
     _duration = value;
+
     markDirty();
+
   }
 
   //--------------------------------------------------
@@ -314,7 +387,9 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   void markDirty() {
+
     _hasUnsavedChanges = true;
+
     autoSaved = false;
 
     _autoSaveService.scheduleAutoSave(
@@ -322,6 +397,7 @@ class StudioController extends ChangeNotifier {
     );
 
     notifyListeners();
+
   }
 
   //--------------------------------------------------
@@ -329,101 +405,171 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   Future<void> saveProject() async {
-    if (_project == null) return;
 
-    if (!_hasUnsavedChanges) return;
+    if (_currentProject == null) {
+      return;
+    }
+
+    if (!_hasUnsavedChanges) {
+      return;
+    }
 
     try {
+
       await _studioService.saveProject(
-        _project!,
+        _currentProject!,
       );
 
       autoSaved = true;
+
       _hasUnsavedChanges = false;
 
       notifyListeners();
+
     } catch (e) {
+
       debugPrint(
         "Save failed: $e",
       );
+
     }
+
   }
 
   //--------------------------------------------------
   // BUSY STATE
   //--------------------------------------------------
 
-  void _setBusy(bool value) {
+  void _setBusy(
+    bool value,
+  ) {
+
     _busy = value;
-    notifyListeners();
-  }
-  //--------------------------------------------------
-  // GENERATE PROJECT
-  //--------------------------------------------------
 
-  Future<void> generateProject(
-    BuildContext context,
-  ) async {
-    final prompt = promptController.text.trim();
-
-    if (prompt.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a prompt."),
-        ),
-      );
-      return;
-    }
-
-    if (!hasCredits) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Insufficient credits."),
-        ),
-      );
-      return;
-    }
-
-    _isGenerating = true;
-    _progress = 0;
     notifyListeners();
 
-    try {
-      final project = await _workflow.runWorkflow(
-        prompt: prompt,
-        style: _style,
-        language: _language,
-        voice: _voice,
-        resolution: _resolution,
-        aspectRatio: _aspectRatio,
-        duration: _duration,
-      );
-
-      _currentProject = project;
-
-      _listenToProgress(project.id);
-      _listenToProject(project.id);
-
-      useCredit();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Generation started successfully.",
-          ),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
-      );
-    } finally {
-      _isGenerating = false;
-      notifyListeners();
-    }
   }
+ //--------------------------------------------------
+// GENERATE PROJECT
+//--------------------------------------------------
+
+Future<void> generateProject(
+  BuildContext context,
+) async {
+
+  final prompt = promptController.text.trim();
+
+  //--------------------------------------------------
+  // VALIDATION
+  //--------------------------------------------------
+
+  if (prompt.isEmpty) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Please enter a prompt.",
+        ),
+      ),
+    );
+
+    return;
+
+  }
+
+  if (!hasCredits) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Insufficient credits.",
+        ),
+      ),
+    );
+
+    return;
+
+  }
+
+  //--------------------------------------------------
+  // START GENERATION
+  //--------------------------------------------------
+
+  _isGenerating = true;
+  _progress = 0;
+
+  notifyListeners();
+
+  try {
+
+    final project =
+        await _workflow.runWorkflow(
+
+      prompt: prompt,
+
+      style: _style,
+
+      language: _language,
+
+      voice: _voice,
+
+      resolution: _resolution,
+
+      aspectRatio: _aspectRatio,
+
+      duration: _duration,
+
+    );
+
+    _currentProject = project;
+
+    previewImage = project.thumbnail;
+
+    _listenToProject(project.id);
+
+    _listenToProgress(project.id);
+
+    useCredit();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "AI generation started.",
+        ),
+      ),
+    );
+
+  } catch (e) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          e.toString(),
+        ),
+      ),
+    );
+
+  } finally {
+
+    _isGenerating = false;
+
+    notifyListeners();
+
+  }
+
+}
+
+ //--------------------------------------------------
+ // BACKWARD COMPATIBILITY
+ //--------------------------------------------------
+
+Future<void> startGeneration(
+  BuildContext context,
+) async {
+
+  await generateProject(context);
+
+}
 
   //--------------------------------------------------
   // LISTEN TO PROJECT
@@ -432,14 +578,26 @@ class StudioController extends ChangeNotifier {
   void _listenToProject(
     String projectId,
   ) {
+
     _workflow
-        .streamProject(projectId)
+        .streamProject(
+          projectId,
+        )
         .listen((project) {
-      if (project == null) return;
+
+      if (project == null) {
+        return;
+      }
 
       _currentProject = project;
+
+      previewImage =
+          project.thumbnail;
+
       notifyListeners();
+
     });
+
   }
 
   //--------------------------------------------------
@@ -449,12 +607,19 @@ class StudioController extends ChangeNotifier {
   void _listenToProgress(
     String projectId,
   ) {
+
     _workflow
-        .renderProgress(projectId)
+        .renderProgress(
+          projectId,
+        )
         .listen((value) {
+
       _progress = value;
+
       notifyListeners();
+
     });
+
   }
 
   //--------------------------------------------------
@@ -462,10 +627,17 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   void useCredit() {
-    if (creditsRemaining >= creditsRequired) {
-      creditsRemaining -= creditsRequired;
-      notifyListeners();
+
+    if (creditsRemaining <
+        creditsRequired) {
+      return;
     }
+
+    creditsRemaining -=
+        creditsRequired;
+
+    notifyListeners();
+
   }
 
   //--------------------------------------------------
@@ -475,8 +647,11 @@ class StudioController extends ChangeNotifier {
   void updateProgress(
     double value,
   ) {
+
     _progress = value;
+
     notifyListeners();
+
   }
 
   //--------------------------------------------------
@@ -484,48 +659,28 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   void cancelGeneration() {
+
     _isGenerating = false;
+
     _progress = 0;
-    notifyListeners();
-  }
 
+    notifyListeners();
+
+  }
   //--------------------------------------------------
   // CLEAR PROMPT
   //--------------------------------------------------
 
   void clearPrompt() {
+
     promptController.clear();
+
     history.clear();
+
+    previewImage = null;
+
     markDirty();
-  }
-  //--------------------------------------------------
-  // LOAD PROJECT
-  //--------------------------------------------------
 
-  void loadProject(ProjectModel project) {
-    _currentProject = project;
-
-    promptController.text = project.enhancedPrompt;
-
-    _style = project.style;
-    _language = project.language;
-    _voice = project.voice;
-    _resolution = project.resolution;
-    _aspectRatio = project.aspectRatio;
-    _duration = project.duration;
-
-    _progress = project.progress;
-
-    notifyListeners();
-  }
-
-  //--------------------------------------------------
-  // CLEAR PROMPT
-  //--------------------------------------------------
-
-  void clearPrompt() {
-    promptController.clear();
-    notifyListeners();
   }
 
   //--------------------------------------------------
@@ -533,6 +688,7 @@ class StudioController extends ChangeNotifier {
   //--------------------------------------------------
 
   void reset() {
+
     _currentProject = null;
 
     promptController.clear();
@@ -547,6 +703,10 @@ class StudioController extends ChangeNotifier {
 
     _busy = false;
 
+    autoSaved = true;
+
+    _hasUnsavedChanges = false;
+
     _style = "Cinematic";
     _language = "English";
     _voice = "Female";
@@ -555,13 +715,15 @@ class StudioController extends ChangeNotifier {
     _duration = "30 Seconds";
 
     notifyListeners();
+
   }
 
   //--------------------------------------------------
-  // PROJECT STREAM
+  // CURRENT PROJECT STREAM
   //--------------------------------------------------
 
   Stream<ProjectModel?> streamCurrentProject() {
+
     if (_currentProject == null) {
       return const Stream.empty();
     }
@@ -569,18 +731,27 @@ class StudioController extends ChangeNotifier {
     return _workflow.streamProject(
       _currentProject!.id,
     );
+
   }
 
   //--------------------------------------------------
-  // SAVE PROJECT
+  // INITIALIZE
   //--------------------------------------------------
 
-  Future<void> saveProject() async {
-    if (_currentProject == null) return;
+  Future<void> initialize() async {
 
-    await _studioService.saveProject(
-      _currentProject!,
+    if (_currentProject == null) {
+      return;
+    }
+
+    _listenToProject(
+      _currentProject!.id,
     );
+
+    _listenToProgress(
+      _currentProject!.id,
+    );
+
   }
 
   //--------------------------------------------------
@@ -589,6 +760,7 @@ class StudioController extends ChangeNotifier {
 
   @override
   void dispose() {
+
     promptController.removeListener(
       _onPromptChanged,
     );
@@ -598,5 +770,7 @@ class StudioController extends ChangeNotifier {
     _autoSaveService.dispose();
 
     super.dispose();
+
   }
+
 }
