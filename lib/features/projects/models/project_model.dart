@@ -15,6 +15,8 @@ class ProjectModel {
 
   final String thumbnail;
 
+  final String runwayJobId;
+
   final String style;
 
   final String language;
@@ -47,6 +49,8 @@ class ProjectModel {
     required this.creditsUsed,
 
     required this.thumbnail,
+
+    required this.runwayJobId,
 
     required this.style,
 
@@ -82,6 +86,8 @@ class ProjectModel {
       'creditsUsed': creditsUsed,
 
       'thumbnail': thumbnail,
+
+      "runwayJobId": runwayJobId,
 
       'style': style,
 
@@ -122,6 +128,8 @@ class ProjectModel {
 
       thumbnail: map['thumbnail'] ?? '',
 
+      runwayJobId: map["runwayJobId"] ?? "",
+
       style: map['style'] ?? 'Pixar',
 
       language: map['language'] ?? 'English',
@@ -153,6 +161,7 @@ class ProjectModel {
     String? status,
     int? creditsUsed,
     String? thumbnail,
+    String? runwayJobId,
     String? style,
     String? language,
     String? voice,
@@ -173,6 +182,7 @@ class ProjectModel {
       status: status ?? this.status,
       creditsUsed: creditsUsed ?? this.creditsUsed,
       thumbnail: thumbnail ?? this.thumbnail,
+      runwayJobId: runwayJobId ?? this.runwayJobId,
       style: style ?? this.style,
       language: language ?? this.language,
       voice: voice ?? this.voice,

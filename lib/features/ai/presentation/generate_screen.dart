@@ -101,6 +101,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
         thumbnail: "",
 
+        runwayJobId: "",
+
         style: animationStyle,
 
         language: "English",

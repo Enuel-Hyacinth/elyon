@@ -168,6 +168,8 @@ class _AIDirectorScreenState
 
       thumbnail: "",
 
+      runwayJobId: "",
+
       style: "Pixar",
 
       language: "English",

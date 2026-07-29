@@ -274,6 +274,9 @@ class _ProjectDetailsScreenState
                     thumbnail:
                         widget.project.thumbnail,
 
+                    runwayJobId: "",
+                        
+
                     style:
                         widget.project.style,
 

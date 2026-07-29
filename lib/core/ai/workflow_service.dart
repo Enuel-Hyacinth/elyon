@@ -5,7 +5,8 @@ import '../../features/projects/services/project_service.dart';
 import '../../features/studio/services/render_service.dart';
 import '../../features/user/services/user_service.dart';
 
-import 'gemini_service.dart';
+import 'ai_provider.dart';
+import 'ai_service.dart';
 
 class WorkflowService {
 
@@ -22,14 +23,14 @@ class WorkflowService {
   // DEPENDENCIES
   //--------------------------------------------------
 
-  final GeminiService _geminiService;
+  final AIService _aiService;
   final ProjectService _projectService;
   final RenderService _renderService;
   final UserService _userService;
 
   WorkflowService({
 
-    GeminiService? geminiService,
+    AIService? aiService,
 
     ProjectService? projectService,
 
@@ -37,9 +38,9 @@ class WorkflowService {
 
     UserService? userService,
 
-  })  : _geminiService =
-            geminiService ??
-            GeminiService(),
+  })  : _aiService =
+            aiService ??
+            AIProvider.instance,
 
         _projectService =
             projectService ??
@@ -57,8 +58,8 @@ class WorkflowService {
   // GETTERS
   //--------------------------------------------------
 
-  GeminiService get gemini =>
-      _geminiService;
+  AIService get ai =>
+      _aiService;
 
   ProjectService get projects =>
       _projectService;
@@ -202,8 +203,9 @@ class WorkflowService {
       return prompt;
     }
 
-    return await _geminiService
-        .enhancePrompt(prompt);
+    return await _aiService.enhancePrompt(
+        prompt,
+    );
 
   }
 
@@ -299,10 +301,41 @@ class WorkflowService {
       );
 
       await _renderService.queueProject(
-        project.id,
-      );
+  project.id,
+);
 
-      return project;
+final jobId =
+    await _aiService.generateMovie(
+
+  prompt: enhancedPrompt,
+
+  style: style,
+
+  language: language,
+
+  voice: voice,
+
+  resolution: resolution,
+
+  aspectRatio: aspectRatio,
+
+  duration: duration,
+
+);
+
+log(
+  "Runway Job: $jobId",
+);
+
+await _projectService.updateRunwayJob(
+
+  project.id,
+
+  jobId,
+
+);
+
+return project;
 
     } catch (e) {
 

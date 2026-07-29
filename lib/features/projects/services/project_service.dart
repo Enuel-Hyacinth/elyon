@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/project_model.dart';
 
 class ProjectService {
+
   //--------------------------------------------------
   // FIREBASE
   //--------------------------------------------------
@@ -123,6 +124,8 @@ class ProjectService {
 
       thumbnail: "",
 
+      runwayJobId: "",
+
       style: style,
       language: language,
       voice: voice,
@@ -150,6 +153,24 @@ class ProjectService {
     await _projects
         .doc(project.id)
         .set(project);
+
+Future<void> updateRunwayJob(
+
+  String projectId,
+
+  String jobId,
+
+) async {
+
+  await _projects.doc(projectId).update({
+
+    "runwayJobId": jobId,
+
+    "lastModified": serverTimestamp,
+
+  });
+
+}
   }
 
   //--------------------------------------------------
@@ -496,6 +517,25 @@ class ProjectService {
 
     return snapshot.exists;
   }
+
+//--------------------------------------------------
+// UPDATE RUNWAY JOB
+//--------------------------------------------------
+
+Future<void> updateRunwayJob(
+  String projectId,
+  String jobId,
+) async {
+
+  await _projects.doc(projectId).update({
+
+    "runwayJobId": jobId,
+
+    "lastModified": serverTimestamp,
+
+  });
+
+}
 
   //--------------------------------------------------
   // HEALTH CHECK

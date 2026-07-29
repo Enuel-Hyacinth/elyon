@@ -191,54 +191,35 @@ class RunwayService implements AIService {
 
   }
 
-  //--------------------------------------------------
-  // VIDEO GENERATION
-  //--------------------------------------------------
+ //--------------------------------------------------
+// VIDEO GENERATION
+//--------------------------------------------------
 
-  @override
-  Future<String> generateMovie({
+@override
+Future<String> generateMovie({
+  required String prompt,
+  required String style,
+  required String language,
+  required String voice,
+  required String resolution,
+  required String aspectRatio,
+  required String duration,
+}) async {
+  final result = await _invoke({
+    "action": "generate",
+    "prompt": prompt,
+    "style": style,
+    "language": language,
+    "voice": voice,
+    "resolution": resolution,
+    "aspectRatio": aspectRatio,
+    "duration": duration,
+  });
 
-    required String prompt,
+  print("Runway response: $result");
 
-    required String style,
+  return result["jobId"];
+}
 
-    required String language,
-
-    required String voice,
-
-    required String resolution,
-
-    required String aspectRatio,
-
-    required String duration,
-
-  }) async {
-
-    final result =
-        await _invoke({
-
-      "action": "generate",
-
-      "prompt": prompt,
-
-      "style": style,
-
-      "language": language,
-
-      "voice": voice,
-
-      "resolution": resolution,
-
-      "aspectRatio": aspectRatio,
-
-      "duration": duration,
-
-    });
-
-    print("Runway response: $result");
-
-    return result["jobId"];
-
-  }
 
 }

@@ -89,6 +89,8 @@ class ProjectService {
 
       thumbnail: "",
 
+      runwayJobId: "",
+
       style: style,
       language: language,
       voice: voice,
