@@ -13,27 +13,21 @@ class ProjectModel {
 
   final int creditsUsed;
 
-  final String thumbnail;
+  // Media
+final String thumbnail;
+final String videoUrl;
 
-  final String runwayJobId;
-
-  final String style;
-
-  final String language;
-
-  final String voice;
-
-  final String aspectRatio;
-
-  final String resolution;
-
-  final String duration;
-
-  final double progress;
-
-  final DateTime createdAt;
-
-  final DateTime lastModified;
+// Generation settings
+final String style;
+final String runwayJobId;
+final String language;
+final String voice;
+final String aspectRatio;
+final String resolution;
+final String duration;
+final double progress;
+final DateTime createdAt;
+final DateTime lastModified;
 
   const ProjectModel({
     required this.id,
@@ -48,26 +42,20 @@ class ProjectModel {
 
     required this.creditsUsed,
 
+    // Media
     required this.thumbnail,
+    required this.videoUrl,
 
+    // Generation settings
     required this.runwayJobId,
-
     required this.style,
-
     required this.language,
-
     required this.voice,
-
     required this.aspectRatio,
-
     required this.resolution,
-
     required this.duration,
-
     required this.progress,
-
     required this.createdAt,
-
     required this.lastModified,
   });
 
@@ -87,7 +75,9 @@ class ProjectModel {
 
       'thumbnail': thumbnail,
 
-      "runwayJobId": runwayJobId,
+      'videoUrl': videoUrl,
+
+      'runwayJobId': runwayJobId,
 
       'style': style,
 
@@ -128,7 +118,9 @@ class ProjectModel {
 
       thumbnail: map['thumbnail'] ?? '',
 
-      runwayJobId: map["runwayJobId"] ?? "",
+      videoUrl: map['videoUrl'] ?? '',
+
+      runwayJobId: map['runwayJobId'] ?? '',
 
       style: map['style'] ?? 'Pixar',
 
@@ -161,6 +153,7 @@ class ProjectModel {
     String? status,
     int? creditsUsed,
     String? thumbnail,
+    String? videoUrl,
     String? runwayJobId,
     String? style,
     String? language,
@@ -182,6 +175,7 @@ class ProjectModel {
       status: status ?? this.status,
       creditsUsed: creditsUsed ?? this.creditsUsed,
       thumbnail: thumbnail ?? this.thumbnail,
+      videoUrl: videoUrl ?? this.videoUrl,
       runwayJobId: runwayJobId ?? this.runwayJobId,
       style: style ?? this.style,
       language: language ?? this.language,

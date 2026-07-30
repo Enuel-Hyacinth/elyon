@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'ai_service.dart';
 
+import 'models/runway_job.dart';
+
 ///--------------------------------------------------
 /// GEMINI SERVICE
 ///--------------------------------------------------
@@ -152,4 +154,30 @@ $prompt
 
     return "movie_job_001";
   }
+
+  //--------------------------------------------------
+// GET JOB
+//--------------------------------------------------
+
+@override
+Future<RunwayJob> getJob(
+  String jobId,
+) async {
+  throw UnimplementedError(
+    "Gemini does not support video jobs.",
+  );
+}
+
+//--------------------------------------------------
+// GET VIDEO URL
+//--------------------------------------------------
+
+@override
+Future<String> getVideoUrl(
+  String jobId,
+) async {
+  throw UnimplementedError(
+    "Gemini does not generate videos.",
+  );
+}
 }

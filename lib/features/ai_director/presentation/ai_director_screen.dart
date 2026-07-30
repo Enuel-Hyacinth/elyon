@@ -166,9 +166,9 @@ class _AIDirectorScreenState
 
       creditsUsed: 5,
 
-      thumbnail: "",
-
-      runwayJobId: "",
+      thumbnail: '',
+      videoUrl: '',
+      runwayJobId: '',
 
       style: "Pixar",
 

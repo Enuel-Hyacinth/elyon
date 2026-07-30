@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../features/projects/models/project_model.dart';
@@ -7,6 +8,7 @@ import '../../features/user/services/user_service.dart';
 
 import 'ai_provider.dart';
 import 'ai_service.dart';
+
 
 class WorkflowService {
 
@@ -304,6 +306,7 @@ class WorkflowService {
   project.id,
 );
 
+
 final jobId =
     await _aiService.generateMovie(
 
@@ -334,6 +337,19 @@ await _projectService.updateRunwayJob(
   jobId,
 
 );
+
+await _waitForRunway(
+  project.id,
+  jobId,
+);
+
+unawaited(
+  pollRunwayJob(
+    projectId: project.id,
+    jobId: jobId,
+  ),
+);
+  
 
 return project;
 
@@ -465,25 +481,29 @@ return project;
 
   Future<void> completeRender({
 
-    required String projectId,
+  required String projectId,
 
-    required String thumbnail,
+  required String thumbnail,
 
-  }) async {
+  required String videoUrl,
 
-    await _renderService.completeRendering(
+}) async {
 
-      projectId: projectId,
+  await _renderService.completeRendering(
 
-      thumbnail: thumbnail,
+    projectId: projectId,
 
-    );
+    thumbnail: thumbnail,
 
-    log(
-      "Render completed.",
-    );
+    videoUrl: videoUrl,
 
-  }
+  );
+
+  log(
+    "Render completed.",
+  );
+
+}
 
   //--------------------------------------------------
   // FAIL RENDER
@@ -718,6 +738,80 @@ return project;
   }
 
   //--------------------------------------------------
+// WAIT FOR RUNWAY
+//--------------------------------------------------
+
+Future<void> _waitForRunway(
+
+  String projectId,
+
+  String jobId,
+
+) async {
+
+  while (true) {
+
+    await Future.delayed(
+
+      const Duration(seconds: 5),
+
+    );
+
+    final job = await _aiService.getJob(
+
+      jobId,
+
+    );
+
+    if (job.status == "SUCCEEDED") {
+
+      await completeRender(
+
+        projectId: projectId,
+
+        thumbnail: job.thumbnailUrl ?? "",
+
+        videoUrl: job.videoUrl ?? "",
+
+      );
+
+      break;
+
+    }
+
+    if (
+
+        job.status == "FAILED" ||
+
+        job.status == "CANCELLED"
+
+    ) {
+
+      await failRender(
+
+        projectId: projectId,
+
+        reason: job.status,
+
+      );
+
+      break;
+
+    }
+
+    await updateProgress(
+
+  projectId: projectId,
+
+  progress: 0.5,
+
+);
+
+  }
+
+}
+
+  //--------------------------------------------------
   // ANALYTICS
   //--------------------------------------------------
 
@@ -779,6 +873,81 @@ return project;
     );
 
   }
+
+
+  //--------------------------------------------------
+// POLL RUNWAY JOB
+//--------------------------------------------------
+
+Future<void> pollRunwayJob({
+
+  required String projectId,
+
+  required String jobId,
+
+}) async {
+
+  log("Polling Runway Job: $jobId");
+
+  while (true) {
+
+    await Future.delayed(
+
+      const Duration(seconds: 5),
+
+    );
+
+    final job = await _aiService.getJob(jobId);
+    
+    if (job.isCompleted) {
+
+      await completeRender(
+
+        projectId: projectId,
+
+        thumbnail: job.thumbnailUrl ?? "",
+
+        videoUrl: job.videoUrl ?? "",
+
+      );
+
+      log(
+
+        "Runway render completed.",
+
+      );
+
+      break;
+
+    }
+
+    if (job.isFailed) {
+
+      await failRender(
+
+        projectId: projectId,
+
+        reason: "Runway render failed.",
+
+      );
+
+      break;
+
+    }
+
+    await updateProgress(
+
+      projectId: projectId,
+
+      progress: 0.5,
+
+    );
+
+  }
+
+}
+      
+    
 //--------------------------------------------------
 // STREAM PROJECT
 //--------------------------------------------------
@@ -802,5 +971,4 @@ Stream<double> renderProgress(
       .streamProject(projectId)
       .map((project) => project?.progress ?? 0.0);
 }
-
 }

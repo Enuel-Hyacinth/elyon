@@ -87,10 +87,10 @@ class ProjectService {
 
       creditsUsed: 20,
 
-      thumbnail: "",
-
-      runwayJobId: "",
-
+      thumbnail: '',
+      videoUrl: '',
+      runwayJobId: '',
+      
       style: style,
       language: language,
       voice: voice,

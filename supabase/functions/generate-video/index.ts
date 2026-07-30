@@ -82,6 +82,66 @@ export default {
             );
           }
 
+ //--------------------------------------------------------
+// GET RUNWAY STATUS
+//--------------------------------------------------------
+
+case "status": {
+
+  const runwayResponse = await fetch(
+    `https://api.dev.runwayml.com/v1/tasks/${body.jobId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${RUNWAY_API_KEY}`,
+        "Content-Type": "application/json",
+        "X-Runway-Version": "2024-11-06",
+      },
+    },
+  );
+
+  const json = await runwayResponse.json();
+
+  console.log(json);
+
+  if (!runwayResponse.ok) {
+
+    return Response.json(
+      {
+        success: false,
+        error: json,
+      },
+      {
+        status: runwayResponse.status,
+        headers,
+      },
+    );
+
+  }
+
+  return Response.json(
+    {
+      success: true,
+
+      id: json.id,
+
+      status: json.status,
+
+      videoUrl:
+          json.output?.[0] ?? null,
+
+      thumbnailUrl:
+          json.output?.[0] ?? null,
+
+      raw: json,
+    },
+    {
+      headers,
+    },
+  );
+
+}
+
           //--------------------------------------------------------
           // ENHANCE PROMPT
           //--------------------------------------------------------
@@ -166,7 +226,7 @@ export default {
           case "thumbnail":
             return Response.json(
               {
-                thumbnail: "",
+                thumbnail: '',
               },
               {
                 headers,
@@ -189,6 +249,7 @@ export default {
               },
             );
         }
+        
       } catch (error) {
         return Response.json(
           {

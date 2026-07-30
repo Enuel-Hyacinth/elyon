@@ -70,21 +70,73 @@ class PreviewPanel extends StatelessWidget {
           AspectRatio(
             aspectRatio: 16 / 9,
             child: Container(
-              color: Colors.black12,
-              child: controller.previewImage == null
-                  ? const Center(
-                      child: Icon(
-                        Icons.image_outlined,
-                        size: 90,
-                        color: Colors.grey,
-                      ),
-                    )
-                  : Image.network(
-                      controller.previewImage!,
-                      fit: BoxFit.cover,
-                    ),
+              color: Colors.black,
+              child: controller.previewVideo != null &&
+              controller.previewVideo!.isNotEmpty
+
+        //--------------------------------------------------
+        // VIDEO READY
+        //--------------------------------------------------
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+
+                const Icon(
+                  Icons.play_circle_fill,
+                  color: Colors.white,
+                  size: 80,
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  "Video Ready",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  controller.previewVideo!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                  ),
+                ),
+
+              ],
             ),
-          ),
+          )
+
+        //--------------------------------------------------
+        // THUMBNAIL
+        //--------------------------------------------------
+        : controller.previewImage != null &&
+                controller.previewImage!.isNotEmpty
+
+            ? Image.network(
+                controller.previewImage!,
+                fit: BoxFit.cover,
+              )
+
+            //--------------------------------------------------
+            // PLACEHOLDER
+            //--------------------------------------------------
+            : const Center(
+                child: Icon(
+                  Icons.image_outlined,
+                  size: 90,
+                  color: Colors.grey,
+                ),
+              ),
+  ),
+),
 
           const SizedBox(height: 16),
 

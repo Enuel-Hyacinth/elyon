@@ -90,6 +90,7 @@ set project(ProjectModel? value) {
   //--------------------------------------------------
 
   String? previewImage;
+  String? previewVideo;
 
   //--------------------------------------------------
   // GENERATION
@@ -215,6 +216,7 @@ set project(ProjectModel? value) {
     _progress = project.progress;
 
     previewImage = project.thumbnail;
+    previewVideo = project.videoUrl;
 
     autoSaved = true;
     _hasUnsavedChanges = false;
@@ -679,6 +681,8 @@ Future<void> startGeneration(
 
     previewImage = null;
 
+    previewVideo = null;
+
     markDirty();
 
   }
@@ -694,6 +698,8 @@ Future<void> startGeneration(
     promptController.clear();
 
     previewImage = null;
+    
+    previewVideo = null;
 
     history.clear();
 

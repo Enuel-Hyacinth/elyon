@@ -99,9 +99,9 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
         creditsUsed: 1,
 
-        thumbnail: "",
-
-        runwayJobId: "",
+        thumbnail: '',
+        videoUrl: '',
+        runwayJobId: '',
 
         style: animationStyle,
 

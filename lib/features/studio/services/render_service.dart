@@ -146,17 +146,28 @@ class RenderService {
   //--------------------------------------------------
 
   Future<void> completeRendering({
-    required String projectId,
-    required String thumbnail,
-  }) async {
-    await _projects.doc(projectId).update({
-      "status": completed,
-      "progress": maximumProgress,
-      "thumbnail": thumbnail,
-      "completedAt": serverTimestamp,
-      "lastModified": serverTimestamp,
-    });
-  }
+  required String projectId,
+  required String thumbnail,
+  required String videoUrl,
+}) async {
+
+  await _projects.doc(projectId).update({
+
+    "status": completed,
+
+    "progress": maximumProgress,
+
+    "thumbnail": thumbnail,
+
+    "videoUrl": videoUrl,
+
+    "completedAt": serverTimestamp,
+
+    "lastModified": serverTimestamp,
+
+  });
+
+}
 
   //--------------------------------------------------
   // FAIL RENDER

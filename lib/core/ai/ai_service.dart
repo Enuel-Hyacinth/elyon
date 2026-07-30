@@ -1,4 +1,4 @@
-
+import 'models/runway_job.dart';
 
 ///--------------------------------------------------
 /// AI SERVICE
@@ -41,6 +41,22 @@ abstract class AIService {
     required String aspectRatio,
     required String duration,
   });
+
+  //--------------------------------------------------
+// JOB STATUS
+//--------------------------------------------------
+
+Future<RunwayJob> getJob(
+  String jobId,
+);
+
+//--------------------------------------------------
+// DOWNLOAD VIDEO
+//--------------------------------------------------
+
+Future<String> getVideoUrl(
+  String jobId,
+);
 
   //--------------------------------------------------
   // IMAGE GENERATION

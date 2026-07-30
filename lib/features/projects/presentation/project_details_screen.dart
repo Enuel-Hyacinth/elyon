@@ -274,9 +274,10 @@ class _ProjectDetailsScreenState
                     thumbnail:
                         widget.project.thumbnail,
 
-                    runwayJobId: "",
-                        
-
+                    videoUrl: '',
+                    
+                    runwayJobId: '',
+                    
                     style:
                         widget.project.style,
 

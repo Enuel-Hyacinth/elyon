@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'ai_service.dart';
+import 'models/runway_job.dart';
 
 class RunwayService implements AIService {
   RunwayService();
@@ -220,6 +221,44 @@ Future<String> generateMovie({
 
   return result["jobId"];
 }
+//--------------------------------------------------
+// GET JOB
+//--------------------------------------------------
 
+@override
+Future<RunwayJob> getJob(
+
+  String jobId,
+
+) async {
+
+  final result = await _invoke({
+
+    "action": "status",
+
+    "jobId": jobId,
+
+  });
+
+  return RunwayJob.fromMap(result);
+
+}
+
+//--------------------------------------------------
+// GET VIDEO URL
+//--------------------------------------------------
+
+@override
+Future<String> getVideoUrl(
+
+  String jobId,
+
+) async {
+
+  final job = await getJob(jobId);
+
+  return job.videoUrl ?? "";
+
+}
 
 }

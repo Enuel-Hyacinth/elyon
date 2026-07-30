@@ -122,10 +122,9 @@ class ProjectService {
 
       creditsUsed: creditsUsed,
 
-      thumbnail: "",
-
-      runwayJobId: "",
-
+      thumbnail: '',
+      videoUrl: '',
+      runwayJobId: '',
       style: style,
       language: language,
       voice: voice,
